@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Mo Rudden — Dublin-based music manager. Artist management, gig booking, and social media marketing for independent artists." />
+  <title>Mo Rudden — Music Management</title>
+
+  <!-- Google Fonts: Playfair Display for headings, DM Mono for accents, Lato for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /*
+      CSS VARIABLES — think of these as a central control panel.
+      Every colour and font is defined once here. Change a value
+      here and it updates everywhere on the page automatically.
+
+      The palette is a warm espresso / 70s vinyl aesthetic:
+        --espresso   : deep brown-black background, like dark roast coffee
+        --brown-mid  : a slightly lighter brown used for card hover states
+        --cream      : warm off-white for headlines and primary text
+        --tan        : muted mid-tone for secondary / supporting text
+        --gold       : a subtle amber used sparingly on hover accents
+        --border     : near-invisible warm line used to divide sections
+    */
+    :root {
+      --espresso:  #1a1410;
+      --brown-mid: #2a1f16;
+      --cream:     #f2ece0;
+      --tan:       #8a7d6e;
+      --gold:      #c9a96e;
+      --border:    rgba(242,236,224,0.1);
+
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-mono:    'DM Mono', monospace;
+      --font-body:    'Lato', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--espresso);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.7;
+      cursor: crosshair;
+      overflow-x: hidden;
+    }
+
+    /*
+      SCROLL FADE-IN — .reveal starts invisible and slightly
+      shifted down. JavaScript adds .visible when the element
+      enters the viewport, fading and lifting it into place.
+      This gives the page its slow, cinematic quality.
+    */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── CUSTOM SCROLLBAR ─────────────────────────────────── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--espresso); }
+    ::-webkit-scrollbar-thumb { background: var(--gold); }
+
+    /* ─── NOISE GRAIN OVERLAY ──────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.35;
+    }
+
+    /* ─── NAVIGATION ───────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.6rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(26,20,16,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      color: var(--cream);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--tan);
+      text-decoration: none;
+      transition: color 0.3s ease;
+      position: relative;
+      padding-bottom: 3px;
+    }
+
+    /*
+      The ::after pseudo-element draws a gold underline under each nav link.
+      It starts at zero width and expands to full width on hover, left-to-right.
+      This is the same technique used on the portfolio cards — pure CSS, no JS.
+    */
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-links a:hover { color: var(--cream); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-links a.active { color: var(--cream); }
+    .nav-links a.active::after { transform: scaleX(1); }
+
+    /* ─── HERO SECTION ─────────────────────────────────────── */
+    #hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 3rem 4rem;
+      overflow: hidden;
+    }
+
+    /* Animated grain / moving background canvas */
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 820px;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--tan);
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      line-height: 1.0;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 1.6rem;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--gold);
+    }
+
+    .hero-tagline {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: var(--tan);
+      border-left: 1px solid var(--gold);
+      padding-left: 1.2rem;
+      margin-bottom: 2.8rem;
+    }
+
+    .hero-cta {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--espresso);
+      background: var(--cream);
+      padding: 0.85rem 2rem;
+      text-decoration: none;
+      transition: background 0.3s, color 0.3s, outline 0.3s;
+    }
+
+    .hero-cta:hover {
+      background: transparent;
+      color: var(--cream);
+      outline: 1px solid var(--cream);
+    }
+
+    /* ─── SECTION BASE ─────────────────────────────────────── */
+    section {
+      padding: 7rem 3rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 3.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      max-width: 80px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.35;
+    }
+
+    /* ─── ABOUT SECTION ────────────────────────────────────── */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    #about .about-left {}
+
+    .about-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.15;
+      margin-bottom: 2rem;
+      font-weight: 400;
+      color: var(--cream);
+    }
+
+    .about-heading em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .about-body {
+      font-size: 0.95rem;
+      color: rgba(242,236,224,0.7);
+      margin-bottom: 1.5rem;
+      max-width: 520px;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 3rem;
+      padding-top: 3rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--cream);
+      display: block;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--tan);
+    }
+
+    /* Photo and caption */
+    .about-figure {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .about-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      aspect-ratio: 3/2;
+      object-fit: cover;
+      object-position: center top;
+      border: 1px solid var(--border);
+    }
+
+    .about-caption {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: var(--tan);
+      padding: 0.6rem 0 0;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ─── SERVICES SECTION ─────────────────────────────────── */
+    #services {}
+
+    .services-intro {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 400;
+      max-width: 700px;
+      margin-bottom: 4rem;
+      line-height: 1.3;
+      color: rgba(242,236,224,0.85);
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+
+    .service-card {
+      padding: 2.5rem;
+      border-right: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+
+    .service-card:last-child { border-right: none; }
+    .service-card:hover { background: var(--brown-mid); }
+
+    .service-number {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    .service-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+      color: var(--cream);
+    }
+
+    .service-desc {
+      font-size: 0.875rem;
+      color: rgba(242,236,224,0.55);
+      line-height: 1.8;
+    }
+
+    /* ─── PORTFOLIO SECTION ────────────────────────────────── */
+    #portfolio {}
+
+    .portfolio-intro {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 400;
+      max-width: 600px;
+      margin-bottom: 4rem;
+      line-height: 1.3;
+      color: rgba(242,236,224,0.85);
+    }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .portfolio-card {
+      position: relative;
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      transition: border-color 0.3s, background 0.3s;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    /*
+      The ::before pseudo-element is an invisible line sitting
+      at the bottom of each card. On hover, it scales from 0
+      to full width left-to-right, creating the gold underline
+      reveal effect without any extra HTML elements.
+    */
+    .portfolio-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .portfolio-card:hover::before { transform: scaleX(1); }
+    .portfolio-card:hover {
+      border-color: rgba(201,169,110,0.25);
+      background: var(--brown-mid);
+    }
+
+    .portfolio-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+
+    .portfolio-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+      color: var(--cream);
+    }
+
+    .portfolio-body {
+      font-size: 0.875rem;
+      color: rgba(242,236,224,0.55);
+      line-height: 1.8;
+    }
+
+    .portfolio-result {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--cream);
+    }
+
+    /* ─── BLOG POST EXPAND ─────────────────────────────────── */
+    .blog-item-wrapper { position: relative; }
+
+    .blog-post {
+      display: none;
+      padding: 2.5rem;
+      border: 1px solid var(--border);
+      border-top: none;
+      background: var(--brown-mid);
+      margin-bottom: 0;
+    }
+
+    .blog-post.open { display: block; }
+
+    .blog-post-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 1.5rem;
+    }
+
+    .blog-post p {
+      font-size: 0.9rem;
+      color: rgba(242,236,224,0.72);
+      line-height: 1.9;
+      margin-bottom: 1.2rem;
+      max-width: 720px;
+    }
+
+    .blog-close {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--tan);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 1rem;
+      transition: color 0.3s;
+    }
+
+    .blog-close:hover { color: var(--cream); }
+    #blog {}
+
+    .blog-intro {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 400;
+      max-width: 600px;
+      margin-bottom: 4rem;
+      line-height: 1.3;
+      color: rgba(242,236,224,0.85);
+    }
+
+    .blog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .blog-item {
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      color: inherit;
+      transition: padding-left 0.3s;
+    }
+
+    .blog-item:hover { padding-left: 1rem; }
+    .blog-item-wrapper:first-child .blog-item { border-top: 1px solid var(--border); }
+
+    .blog-date {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: var(--tan);
+    }
+
+    .blog-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--cream);
+    }
+
+    .blog-arrow {
+      font-size: 1rem;
+      color: var(--tan);
+      transition: color 0.3s, transform 0.3s;
+    }
+
+    .blog-item:hover .blog-arrow {
+      color: var(--gold);
+      transform: translateX(4px);
+    }
+
+    /* ─── CONTACT SECTION ──────────────────────────────────── */
+    #contact {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: start;
+    }
+
+    .contact-left {}
+
+    .contact-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      color: var(--cream);
+    }
+
+    .contact-heading em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .contact-sub {
+      font-size: 0.9rem;
+      color: rgba(242,236,224,0.55);
+      margin-bottom: 3rem;
+      max-width: 380px;
+      line-height: 1.8;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contact-link {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--tan);
+      text-decoration: none;
+      transition: color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .contact-link::before {
+      content: '—';
+      color: var(--gold);
+      opacity: 0.5;
+    }
+
+    .contact-link:hover { color: var(--cream); }
+
+    /* Contact Form */
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-field label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .form-field input,
+    .form-field textarea {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 0.9rem;
+      padding: 0.75rem 0;
+      outline: none;
+      transition: border-color 0.3s;
+      width: 100%;
+      resize: none;
+    }
+
+    .form-field input::placeholder,
+    .form-field textarea::placeholder {
+      color: rgba(242,236,224,0.2);
+    }
+
+    /*
+      :focus is a CSS state that activates when the user clicks
+      into an input field. Here it turns the bottom border from
+      a faint line to the gold accent colour, giving clear visual
+      feedback that the field is active.
+    */
+    .form-field input:focus,
+    .form-field textarea:focus {
+      border-bottom-color: var(--gold);
+    }
+
+    .form-field textarea { min-height: 120px; }
+
+    .form-submit {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--espresso);
+      background: var(--cream);
+      border: none;
+      padding: 1rem 2.5rem;
+      cursor: pointer;
+      align-self: flex-start;
+      transition: background 0.3s, color 0.3s, outline 0.3s;
+    }
+
+    .form-submit:hover {
+      background: transparent;
+      color: var(--cream);
+      outline: 1px solid var(--cream);
+    }
+
+    /* ─── FOOTER ───────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--espresso);
+    }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--tan);
+    }
+
+    .footer-tagline {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-style: italic;
+      color: var(--gold);
+      opacity: 0.5;
+    }
+
+    /* ─── HAMBURGER MENU (mobile only) ────────────────────── */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      z-index: 200;
+    }
+
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--cream);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* ─── MOBILE NAV DRAWER ────────────────────────────────── */
+    .nav-drawer {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--espresso);
+      z-index: 150;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+    }
+
+    .nav-drawer.open { display: flex; }
+
+    .nav-drawer a {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 400;
+      color: var(--cream);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 0.3s;
+    }
+
+    .nav-drawer a:hover { color: var(--gold); }
+
+    /* ─── ANIMATED BACKGROUND ──────────────────────────────── */
+    /* Handled by JS canvas below */
+
+    /* ─── RESPONSIVE ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { gap: 1.5rem; }
+
+      section { padding: 5rem 1.5rem; }
+
+      #hero { padding: 0 1.5rem 3rem; }
+
+      #about {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+
+      .about-img { aspect-ratio: 4/3; }
+
+      .services-grid { grid-template-columns: 1fr; }
+
+      .service-card {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .service-card:last-child { border-bottom: none; }
+
+      .portfolio-grid { grid-template-columns: 1fr; }
+
+      .blog-item {
+        grid-template-columns: 80px 1fr auto;
+        gap: 1rem;
+      }
+
+      #contact {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      /* Hide text nav, show hamburger */
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+
+      .about-stats { grid-template-columns: 1fr 1fr; }
+      .hero-title { font-size: 2.4rem; }
+
+      /* Hero text needs more breathing room on small screens */
+      .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.15em; }
+      .hero-tagline { font-size: 0.75rem; }
+
+      /* Blog items: stack date above title on very small screens */
+      .blog-item {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+      }
+      .blog-date {
+        grid-column: 1 / -1;
+        margin-bottom: 0.2rem;
+      }
+
+      /* Portfolio cards full padding reduction */
+      .portfolio-card { padding: 1.8rem; }
+      .service-card   { padding: 2rem; }
+
+      /* Blog post padding reduction */
+      .blog-post { padding: 1.5rem; }
+
+      /* Contact section tighter on mobile */
+      #contact { gap: 2rem; }
+
+      /* Stats: ensure they don't overflow */
+      .stat-number { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       NAVIGATION
+       The fixed bar at the top of every page.
+       Visitors use this to jump between sections.
+  ════════════════════════════════════════════════ -->
+  <nav>
+    <a href="#hero" class="nav-logo">Mo Rudden</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#portfolio">Work</a></li>
+      <li><a href="#blog">Notes</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <!-- Hamburger — visible on mobile only -->
+    <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile full-screen nav drawer -->
+  <div class="nav-drawer" id="nav-drawer">
+    <a href="#about"    class="drawer-link">About</a>
+    <a href="#services" class="drawer-link">Services</a>
+    <a href="#portfolio" class="drawer-link">Work</a>
+    <a href="#blog"     class="drawer-link">Notes</a>
+    <a href="#contact"  class="drawer-link">Contact</a>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       HERO SECTION
+       The first thing visitors see — full screen.
+       Sets the mood, states who you are and what
+       you do, invites them to keep scrolling.
+  ════════════════════════════════════════════════ -->
+  <section id="hero">
+    <canvas id="hero-canvas"></canvas>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">Music Management · Dublin, Ireland</p>
+
+      <h1 class="hero-title">
+        More Music,<br /><em>Mo' Managing.</em>
+      </h1>
+
+      <p class="hero-tagline">
+        Helping independent artists grow their sound, their presence, and their career.
+      </p>
+
+      <a href="#about" class="hero-cta">See the work</a>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       ABOUT SECTION
+       Your story — who you are, where you came from,
+       why you do this. Builds trust and personality.
+       Includes key stats to back up your credibility.
+  ════════════════════════════════════════════════ -->
+  <section id="about">
+
+    <div class="about-left">
+      <p class="section-label reveal">About</p>
+
+      <h2 class="about-heading reveal">
+        The record collector<br /><em>who gets results.</em>
+      </h2>
+
+      <p class="about-body">
+        I'm Mo Rudden — a music manager based in Dublin and a lifelong record collector with A&R instincts sharpened over years of obsessive listening. My career has been in tech sales, an industry built entirely on relationships, persistence, and the ability to walk into any room and connect with anyone in it. That skillset doesn't stay in the office — it travels directly into how I manage artists, approach venues, and deliver for the people I work with.
+      </p>
+
+      <p class="about-body">
+        Booking gigs, running social media, designing guerrilla marketing campaigns, selling tickets — I learned by doing. What I discovered is that I'm good at it, and that I love it. So I retired my career in sales and went all in.
+      </p>
+
+      <p class="about-body">
+        I work with independent artists who want to focus on making music while someone else handles the business of being an artist.
+      </p>
+
+      <div class="about-stats">
+        <div>
+          <span class="stat-number" style="font-size:1.6rem; line-height:1.2;">Berklee</span>
+          <span class="stat-label">Certificate — Music Business Foundations</span>
+        </div>
+        <div>
+          <span class="stat-number" style="font-size:1.6rem; line-height:1.2;">UCD</span>
+          <span class="stat-label">Professional Diploma in Leadership & Management — Distinction</span>
+        </div>
+        <div>
+          <span class="stat-number">Dublin</span>
+          <span class="stat-label">Based & operating</span>
+        </div>
+        <div>
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Focus on your music</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-right">
+      <figure class="about-figure">
+        <img
+          src="gig_photo.jpg"
+          alt="The Becks performing live — managed by Mo Rudden"
+          class="about-img"
+        />
+        <figcaption class="about-caption">The Becks — The Grand Social, July 2025</figcaption>
+      </figure>
+    </div>
+
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SERVICES SECTION
+       What you actually offer to artists.
+       Clear, simple — so a visitor immediately knows
+       whether you can help them.
+  ════════════════════════════════════════════════ -->
+  <section id="services">
+    <p class="section-label reveal">What I Do</p>
+
+    <p class="services-intro reveal">
+      Everything an artist shouldn't have to think about — handled.
+    </p>
+
+    <div class="services-grid">
+
+      <div class="service-card reveal">
+        <span class="service-number">01</span>
+        <h3 class="service-title">Artist Management</h3>
+        <p class="service-desc">
+          Day-to-day management for independent artists. Liaising with venues, promoters, and labels.
+        </p>
+      </div>
+
+      <div class="service-card reveal">
+        <span class="service-number">02</span>
+        <h3 class="service-title">Gig Booking & Events</h3>
+        <p class="service-desc">
+          End-to-end event coordination. From sourcing the right venues to managing the door, tickets, and on-the-night logistics.
+        </p>
+      </div>
+
+      <div class="service-card reveal">
+        <span class="service-number">03</span>
+        <h3 class="service-title">Socials & Marketing</h3>
+        <p class="service-desc">
+          Building your presence online the way it should be done — organically, consistently, and with genuine creative instinct.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       PORTFOLIO SECTION
+       Proof of what you've done. Each card is a
+       project or achievement you can point to.
+       More cards can be added as your career grows.
+  ════════════════════════════════════════════════ -->
+  <section id="portfolio">
+    <p class="section-label reveal">Selected Work</p>
+
+    <p class="portfolio-intro reveal">
+      Real results for real artists, from the ground up.
+    </p>
+
+    <div class="portfolio-grid">
+
+      <div class="portfolio-card reveal">
+        <span class="portfolio-tag">Venue Growth · Dublin</span>
+        <h3 class="portfolio-title">From Anseo to Whelans</h3>
+        <p class="portfolio-body">
+          Managed The Becks from their first small venue sell-out at Anseo to selling out upstairs at Whelans — one of the city's most respected live music venues — within a four-month window.
+        </p>
+        <p class="portfolio-result">↑ Sold out Whelans Upstairs within 4 months</p>
+      </div>
+
+      <div class="portfolio-card reveal">
+        <span class="portfolio-tag">Audience Development</span>
+        <h3 class="portfolio-title">Six Months of Steady Growth</h3>
+        <p class="portfolio-body">
+          Sustained a consistent upward trajectory for Matthew Blake's social following over six months through a mix of content strategy, release marketing, and community building — no paid ads, just smart work.
+        </p>
+        <p class="portfolio-result">↑ Consistent following growth over 6 months</p>
+      </div>
+
+      <div class="portfolio-card reveal">
+        <span class="portfolio-tag">Campaign · Guerrilla Marketing</span>
+        <h3 class="portfolio-title">Real-World Guerrilla Marketing</h3>
+        <p class="portfolio-body">
+          Designed and executed guerrilla marketing tactics that built local buzz and real-world visibility on minimal budget. Proof that creativity outperforms spend every time.
+        </p>
+        <p class="portfolio-result">Low budget · High visibility</p>
+      </div>
+
+      <div class="portfolio-card reveal">
+        <span class="portfolio-tag">Release & Ticket Marketing</span>
+        <h3 class="portfolio-title">End-to-End Rollout</h3>
+        <p class="portfolio-body">
+          Handled full social media marketing cycles for gig announcements, ticket sales, and single/EP releases — from content creation to scheduling to community response.
+        </p>
+        <p class="portfolio-result">Full funnel: awareness → ticket sale</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       BLOG / NOTES SECTION
+       Your voice on the industry. Posting here
+       regularly builds credibility, shows you're
+       active, and gives people a reason to return.
+  ════════════════════════════════════════════════ -->
+  <section id="blog">
+    <p class="section-label reveal">Notes</p>
+
+    <p class="blog-intro reveal">
+      Thoughts on music, management, and the industry.
+    </p>
+
+    <div class="blog-list">
+
+      <div class="blog-item-wrapper">
+        <a href="#" class="blog-item" data-post="post1">
+          <span class="blog-date">May 2025</span>
+          <span class="blog-title">Why every Dublin band needs a manager before they think they do</span>
+          <span class="blog-arrow">→</span>
+        </a>
+        <div class="blog-post" id="post1">
+          <h3 class="blog-post-title">Why every Dublin band needs a manager before they think they do</h3>
+          <p>Most bands in Dublin have the same conversation at some point: "We don't need a manager yet, we're not big enough." I've heard it a dozen times, and I understand the logic. Management feels like a luxury — something you earn once the gigs get bigger and the money starts coming in. But that thinking is backwards, and it's costing bands the momentum they've already worked hard to build.</p>
+          <p>The truth is, the early stages of a band's career are exactly when a manager matters most. That's when habits form, when venues get their first impression of you, when your social media presence either starts building or starts stalling. A manager doesn't just handle the admin — they shape the narrative around the artist from the very beginning.</p>
+          <p>In Dublin specifically, the scene is tight. Promoters talk to each other. Venue bookers remember who showed up professional and who didn't. A manager acts as the buffer between an artist's raw talent and the business-side of the industry — making sure the image you project is intentional, not accidental.</p>
+          <p>From personal experience booking smaller Dublin venues like Anseo and working up to Whelans, the difference between bands that grow and bands that stagnate often comes down to one thing: someone in their corner who is thinking about the next step while the band is still celebrating the last one. That's what a manager does. And no, you don't need to be selling out the Olympia first.</p>
+          <button class="blog-close">Close ×</button>
+        </div>
+      </div>
+
+      <div class="blog-item-wrapper">
+        <a href="#" class="blog-item" data-post="post2">
+          <span class="blog-date">Apr 2025</span>
+          <span class="blog-title">What guerrilla marketing taught me that no textbook could</span>
+          <span class="blog-arrow">→</span>
+        </a>
+        <div class="blog-post" id="post2">
+          <h3 class="blog-post-title">What guerrilla marketing taught me that no textbook could</h3>
+          <p>I have a Berklee certificate in Music Business Foundations and a Distinction from UCD's Professional Diploma in Leadership and Management. I'm genuinely proud of both. They gave me frameworks, strategy, and the kind of structured thinking that makes me better at my job every day.</p>
+          <p>But some of the most useful things I've ever learned about marketing came from standing on a street corner in Dublin with a stack of handmade flyers and a genuine belief that people would care if we could just get their attention for two seconds.</p>
+          <p>Guerrilla marketing works because it's unexpected. Most artists promote gigs online — and they should — but the physical world is vastly underused. A well-placed, well-designed poster in the right part of the city can do more for brand recognition than a hundred Instagram posts that disappear into an algorithm. The key word is "well-placed." You have to know your audience, know where they move, and know what will make them stop.</p>
+          <p>The other thing guerrilla tactics teach you is resourcefulness. When your budget is minimal, your creativity has to compensate. That constraint builds a discipline that I've never lost, even as the tools and budgets have grown. If you can generate buzz with nothing, imagine what you can do with something.</p>
+          <p>Marketing strategy in business school teaches you to think big. Guerrilla marketing taught me to think human.</p>
+          <button class="blog-close">Close ×</button>
+        </div>
+      </div>
+
+      <div class="blog-item-wrapper">
+        <a href="#" class="blog-item" data-post="post3">
+          <span class="blog-date">Mar 2025</span>
+          <span class="blog-title">From Anseo to Whelans: the anatomy of a venue step-up</span>
+          <span class="blog-arrow">→</span>
+        </a>
+        <div class="blog-post" id="post3">
+          <h3 class="blog-post-title">From Anseo to Whelans: the anatomy of a venue step-up</h3>
+          <p>When The Becks played Anseo and sold it out, the instinct was to immediately book somewhere bigger. And eventually, that's exactly what happened — we sold out upstairs in Whelans within four months. But the path between those two shows wasn't just ambition. It was a strategy.</p>
+          <p>The first thing to understand about a venue step-up is that it's not just about capacity. It's about credibility. Moving from a smaller venue to a respected room like Whelans signals to the industry — promoters, labels, other artists, the press — that something is happening. That signal has to be earned, and it has to be managed carefully.</p>
+          <p>Here's how we approached it. After Anseo, we focused on growing the audience online in a way that translated to real bodies at shows. That meant consistent social content around the music itself, not just event announcements. It meant building a genuine community — people who felt invested in the band, not just aware of them. We also filmed content at the Anseo show that told the story of a sold-out room, which created social proof and momentum going into the Whelans announcement.</p>
+          <p>The ticket strategy mattered too. We didn't just put tickets on sale and hope. We staggered the release, created urgency, and made the sold-out moment part of the narrative. By the time Whelans Upstairs sold out, it felt inevitable — but only because the groundwork had been laid carefully.</p>
+          <p>That's what management is: making the right things feel inevitable.</p>
+          <button class="blog-close">Close ×</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       CONTACT SECTION
+       How people get in touch with you.
+       Left side = your info & social links.
+       Right side = the contact form (submissions
+       go directly to your email address).
+  ════════════════════════════════════════════════ -->
+  <section id="contact">
+
+    <div class="contact-left">
+      <p class="section-label reveal">Contact</p>
+
+      <h2 class="contact-heading reveal">
+        Let's make<br /><em>something happen.</em>
+      </h2>
+
+      <p class="contact-sub">
+        If you're an independent artist looking for management, or just want to have a conversation about where your music career could go — I'd like to hear from you.
+      </p>
+
+      <div class="contact-links">
+        <a href="mailto:machublake@gmail.com" class="contact-link">machublake@gmail.com</a>
+        <a href="#" class="contact-link">Instagram</a>
+        <a href="#" class="contact-link">LinkedIn</a>
+      </div>
+    </div>
+
+    <div class="contact-right">
+      <!-- 
+        This form uses Formspree to send submissions to your email.
+        In Prompt 4, we will connect this properly so it actually sends.
+        For now the structure is here and ready.
+      -->
+      <form
+        class="contact-form"
+        id="contact-form"
+        action="https://formspree.io/f/machublake@gmail.com"
+        method="POST"
+      >
+        <div class="form-field">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" name="name" placeholder="Artist or band name" required />
+        </div>
+
+        <div class="form-field">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@email.com" required />
+        </div>
+
+        <div class="form-field">
+          <label for="subject">What are you looking for?</label>
+          <input type="text" id="subject" name="subject" placeholder="Management, booking, social media..." />
+        </div>
+
+        <div class="form-field">
+          <label for="message">Tell me about your music</label>
+          <textarea id="message" name="message" placeholder="Genre, where you're at, what you need..." required></textarea>
+        </div>
+
+        <input type="hidden" name="_replyto" value="machublake@gmail.com" />
+        <input type="hidden" name="_subject" value="New enquiry from morудденmusic.com" />
+
+        <button type="submit" class="form-submit" id="form-submit-btn">Send Message</button>
+        <p class="form-success" id="form-success" style="display:none; font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.15em; color:var(--gold); margin-top:1rem;">
+          Message sent — I'll be in touch shortly.
+        </p>
+      </form>
+    </div>
+
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+       Simple bottom bar with copyright and tagline.
+  ════════════════════════════════════════════════ -->
+  <footer>
+    <span class="footer-copy">© 2025 Mo Rudden. All rights reserved.</span>
+    <span class="footer-tagline">More Music, Mo' Managing.</span>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════════════════
+       ANIMATED HERO BACKGROUND
+       A slow-moving abstract canvas that gives the
+       hero section its cinematic, atmospheric feel.
+  ════════════════════════════════════════════════ -->
+  <script>
+    (function () {
+      const canvas = document.getElementById('hero-canvas');
+      const ctx = canvas.getContext('2d');
+      let w, h, particles;
+
+      function resize() {
+        w = canvas.width  = canvas.offsetWidth;
+        h = canvas.height = canvas.offsetHeight;
+      }
+
+      function createParticles() {
+        particles = Array.from({ length: 60 }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.5 + 0.3,
+          dx: (Math.random() - 0.5) * 0.3,
+          dy: (Math.random() - 0.5) * 0.3,
+          opacity: Math.random() * 0.25 + 0.04,
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+
+        // Warm espresso radial gradient background
+        const grad = ctx.createRadialGradient(w * 0.35, h * 0.55, 0, w * 0.35, h * 0.55, w * 0.9);
+        grad.addColorStop(0, 'rgba(42,31,22,1)');
+        grad.addColorStop(1, 'rgba(26,20,16,1)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Subtle warm amber light leak top-left
+        const leak = ctx.createRadialGradient(w * 0.1, h * 0.1, 0, w * 0.1, h * 0.1, w * 0.6);
+        leak.addColorStop(0, 'rgba(201,169,110,0.07)');
+        leak.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = leak;
+        ctx.fillRect(0, 0, w, h);
+
+        // Floating cream/gold particles — like dust in a record shop
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(242,236,224,${p.opacity})`;
+          ctx.fill();
+
+          p.x += p.dx;
+          p.y += p.dy;
+          if (p.x < 0 || p.x > w) p.dx *= -1;
+          if (p.y < 0 || p.y > h) p.dy *= -1;
+        });
+
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      createParticles();
+      draw();
+
+      window.addEventListener('resize', () => { resize(); createParticles(); });
+    })();
+  </script>
+
+  <script>
+    /* ─── SCROLL REVEAL ────────────────────────────────── */
+    (function () {
+      var revealObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+    })();
+  </script>
+
+  <!--
+    ═══════════════════════════════════════════════
+    JAVASCRIPT — THREE BEHAVIOURS EXPLAINED
+
+    1. BLOG EXPAND/COLLAPSE
+       Each blog item has a data-post attribute linking
+       it to a hidden .blog-post div below it. Clicking
+       a title toggles that post open or closed. If
+       another post is already open, it closes first.
+       This is called an accordion pattern.
+
+    2. NAV ACTIVE STATE
+       An IntersectionObserver watches each section.
+       When a section scrolls into view, the matching
+       nav link gets the class .active, which triggers
+       the gold underline via CSS. This gives users
+       a clear sense of where they are on the page.
+
+    3. CONTACT FORM (AJAX)
+       Instead of the form navigating to a new page
+       on submit, we intercept it with JavaScript and
+       send the data to Formspree using fetch(). On
+       success, we show the gold confirmation message
+       in-place. This is a much smoother experience.
+    ════════════════════════════════════════════════
+  -->
+  <script>
+    /* ─── 1. BLOG EXPAND / COLLAPSE ───────────────────── */
+    document.querySelectorAll('.blog-item').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var postId = this.getAttribute('data-post');
+        var targetPost = document.getElementById(postId);
+
+        // Close any already-open post
+        document.querySelectorAll('.blog-post.open').forEach(function(p) {
+          if (p !== targetPost) p.classList.remove('open');
+        });
+
+        // Toggle the clicked post
+        targetPost.classList.toggle('open');
+
+        // If now open, scroll into view smoothly
+        if (targetPost.classList.contains('open')) {
+          setTimeout(function() {
+            targetPost.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 50);
+        }
+      });
+    });
+
+    // Close buttons inside each post
+    document.querySelectorAll('.blog-close').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        this.closest('.blog-post').classList.remove('open');
+      });
+    });
+  </script>
+
+  <script>
+    /* ─── 2. NAV ACTIVE STATE ON SCROLL ───────────────── */
+    (function () {
+      var sections = document.querySelectorAll('section[id]');
+      var navLinks = document.querySelectorAll('.nav-links a');
+
+      /*
+        IntersectionObserver fires each time a section
+        enters or leaves the viewport. We track which
+        section is currently most visible and highlight
+        the matching nav link.
+      */
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var id = entry.target.getAttribute('id');
+            navLinks.forEach(function(link) {
+              link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+            });
+          }
+        });
+      }, { threshold: 0.35 });
+
+      sections.forEach(function(section) {
+        observer.observe(section);
+      });
+    })();
+  </script>
+
+  <script>
+    /* ─── 3. CONTACT FORM AJAX SUBMISSION ─────────────── */
+    (function () {
+      var form = document.getElementById('contact-form');
+      var btn  = document.getElementById('form-submit-btn');
+      var msg  = document.getElementById('form-success');
+
+      if (!form) return;
+
+      /*
+        We listen for the form's submit event and call
+        preventDefault() so the browser doesn't navigate
+        away. Instead we use fetch() to send the data to
+        Formspree in the background. Formspree reads the
+        action URL and forwards the submission to the
+        email address set there.
+      */
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        btn.textContent = 'Sending…';
+        btn.disabled = true;
+
+        fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        })
+        .then(function(response) {
+          if (response.ok) {
+            form.reset();
+            btn.style.display = 'none';
+            msg.style.display = 'block';
+          } else {
+            btn.textContent = 'Send Message';
+            btn.disabled = false;
+            alert('Something went wrong. Please email machublake@gmail.com directly.');
+          }
+        })
+        .catch(function() {
+          btn.textContent = 'Send Message';
+          btn.disabled = false;
+          alert('Something went wrong. Please email machublake@gmail.com directly.');
+        });
+      });
+    })();
+  </script>
+  <script>
+    /* ─── HAMBURGER MENU ───────────────────────────────────── */
+    /*
+      On mobile, tapping the hamburger opens a full-screen
+      overlay with the nav links in large type. Tapping any
+      link closes it automatically so the page scrolls correctly.
+    */
+    (function () {
+      var btn    = document.getElementById('hamburger');
+      var drawer = document.getElementById('nav-drawer');
+
+      if (!btn || !drawer) return;
+
+      btn.addEventListener('click', function () {
+        btn.classList.toggle('open');
+        drawer.classList.toggle('open');
+        // Prevent body scroll while menu is open
+        document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
+      });
+
+      // Close menu when a drawer link is tapped
+      drawer.querySelectorAll('.drawer-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+          btn.classList.remove('open');
+          drawer.classList.remove('open');
+          document.body.style.overflow = '';
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
